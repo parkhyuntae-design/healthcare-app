@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>나의 헬스케어 데이터 알기 | 동아대학교 건강관리학과</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Noto+Serif+KR:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:#0e1b2a; --navy:#0d2137; --blue:#1a5276; --mid:#2471a3; --sky:#5dade2;
+  --teal:#0e9aa7; --bg:#eef2f7; --surface:#f8fafc; --card:#fff; --border:#ccd6e0;
+  --muted:#6b7a8d; --ok:#1a7f4b; --warn:#b45309; --danger:#b91c1c;
+  --ok-bg:#ecfdf5; --warn-bg:#fffbeb; --danger-bg:#fef2f2;
+  --mono:'IBM Plex Mono',monospace; --serif:'Noto Serif KR',serif;
+  --sans:'IBM Plex Sans KR',sans-serif;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);min-height:100vh;font-size:14px;line-height:1.6}
+
+/* TOPBAR */
+.topbar{position:sticky;top:0;z-index:900;background:var(--navy);height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;box-shadow:0 2px 16px rgba(0,0,0,.3)}
+.tb-brand{display:flex;align-items:center;gap:12px}
+.tb-logo{width:36px;height:36px;background:var(--teal);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:white;font-family:var(--serif)}
+.tb-title{color:white;font-size:15px;font-weight:600;letter-spacing:-.3px}
+.tb-sub{color:rgba(255,255,255,.5);font-size:11px;font-weight:300}
+.tb-nav{display:flex;gap:2px}
+.tb-btn{background:none;border:none;cursor:pointer;color:rgba(255,255,255,.6);padding:8px 14px;border-radius:7px;font-family:var(--sans);font-size:13px;font-weight:500;transition:all .18s;display:flex;align-items:center;gap:6px}
+.tb-btn:hover{background:rgba(255,255,255,.08);color:white}
+.tb-btn.active{background:rgba(93,173,226,.2);color:var(--sky)}
+.tb-btn .ico{font-size:15px}
+
+/* LAYOUT */
+.container{max-width:1100px;margin:0 auto;padding:32px 20px 80px}
+.section{display:none}
+.section.active{display:block}
+.page-title{font-family:var(--serif);font-size:24px;font-weight:700;color:var(--navy);margin-bottom:6px}
+.page-sub{color:var(--muted);font-size:13px;margin-bottom:28px}
+
+/* CARDS */
+.card{background:var(--card);border-radius:12px;border:1px solid var(--border);padding:24px;margin-bottom:18px;box-shadow:0 1px 6px rgba(0,0,0,.05)}
+.card-head{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:700;color:var(--blue);margin-bottom:18px;padding-bottom:12px;border-bottom:2px solid var(--bg)}
+.card-head .num{width:26px;height:26px;border-radius:6px;background:var(--blue);color:white;font-family:var(--mono);font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.card-head .tag{background:#e8f1f8;color:var(--mid);font-size:11px;padding:2px 8px;border-radius:4px;font-weight:600;margin-left:auto;font-family:var(--mono)}
+
+/* FORM */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.4px;text-transform:uppercase}
+.field input,.field select,.field textarea{border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;font-family:var(--sans);background:var(--surface);color:var(--ink);transition:border-color .15s,box-shadow .15s}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--mid);box-shadow:0 0 0 3px rgba(36,113,163,.12)}
+.field textarea{resize:vertical;min-height:80px}
+.field .hint{font-size:11px;color:var(--muted);font-family:var(--mono)}
+.field input[type="number"]{font-family:var(--mono)}
+
+/* TABS */
+.tabs{display:flex;gap:0;margin-bottom:24px;border-bottom:2px solid var(--border);overflow-x:auto}
+.tab-btn{background:none;border:none;cursor:pointer;padding:10px 18px;font-family:var(--sans);font-size:13px;font-weight:500;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:all .15s}
+.tab-btn:hover{color:var(--blue)}
+.tab-btn.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:700}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:7px;border:none;border-radius:9px;cursor:pointer;font-family:var(--sans);font-weight:600;font-size:13px;padding:10px 20px;transition:all .18s}
+.btn-primary{background:var(--blue);color:white}
+.btn-primary:hover{background:var(--mid);transform:translateY(-1px);box-shadow:0 4px 14px rgba(26,82,118,.35)}
+.btn-teal{background:var(--teal);color:white}
+.btn-teal:hover{opacity:.88;transform:translateY(-1px)}
+.btn-green{background:var(--ok);color:white}
+.btn-green:hover{opacity:.88;transform:translateY(-1px)}
+.btn-red{background:#c0392b;color:white}
+.btn-red:hover{opacity:.88;transform:translateY(-1px)}
+.btn-outline{background:white;border:2px solid var(--border);color:var(--ink)}
+.btn-outline:hover{border-color:var(--blue);color:var(--blue)}
+.btn-sm{padding:7px 14px;font-size:12px;border-radius:7px}
+.btn-bar{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px;align-items:center}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none !important}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;font-family:var(--mono)}
+.b-ok{background:var(--ok-bg);color:var(--ok)}
+.b-warn{background:var(--warn-bg);color:var(--warn)}
+.b-err{background:var(--danger-bg);color:var(--danger)}
+.b-info{background:#eff6ff;color:#1d4ed8}
+
+/* WEEK TABLE */
+.wt{width:100%;border-collapse:collapse;font-size:12px}
+.wt th{background:var(--navy);color:white;padding:9px 8px;text-align:center;font-weight:600;font-size:11px;letter-spacing:.3px}
+.wt td{padding:6px 8px;border:1px solid var(--border);text-align:center}
+.wt td input{width:80px;border:1px solid #d1dce8;border-radius:5px;padding:4px 6px;font-size:12px;text-align:center;font-family:var(--mono);background:white}
+.wt td input:focus{outline:none;border-color:var(--sky)}
+.wt tr:nth-child(even) td{background:#f8fafc}
+.wt .avg-row td{background:#eef6ff;font-weight:700;font-family:var(--mono);color:var(--blue)}
+
+/* RESULT TABLE */
+.rt{width:100%;border-collapse:collapse;font-size:13px}
+.rt thead th{background:var(--navy);color:white;padding:10px 12px;text-align:left;font-weight:600;font-size:12px}
+.rt tbody td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+.rt tbody tr:hover td{background:var(--bg)}
+
+/* SCORE */
+.score-overview{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.score-tile{background:white;border:1px solid var(--border);border-radius:10px;padding:16px 14px;text-align:center;border-top:4px solid var(--border)}
+.score-tile.ok{border-top-color:#22c55e}
+.score-tile.warn{border-top-color:#f59e0b}
+.score-tile.err{border-top-color:#ef4444}
+.score-tile .tv{font-size:26px;font-weight:700;font-family:var(--mono);color:var(--navy)}
+.score-tile .tl{font-size:11px;color:var(--muted);margin-top:4px}
+.score-tile .tj{margin-top:8px}
+.gauge-row{display:flex;align-items:center;gap:12px;margin:7px 0}
+.gauge-row .gl{width:150px;font-size:12.5px;color:var(--ink);flex-shrink:0}
+.gauge-row .gb{flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden}
+.gauge-row .gf{height:100%;border-radius:4px;transition:width .8s cubic-bezier(.4,0,.2,1)}
+.gauge-row .gv{width:60px;text-align:right;font-family:var(--mono);font-size:12px;font-weight:700}
+
+/* ============================================================
+   제출 전용 스타일
+============================================================ */
+.submit-banner{
+  background:linear-gradient(135deg,#0d2137,#1a5276);
+  border-radius:14px; padding:28px 32px; margin-bottom:24px; color:white;
+}
+.submit-banner h2{font-size:20px;font-weight:700;margin-bottom:6px}
+.submit-banner p{opacity:.75;font-size:13px;line-height:1.7}
+.submit-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}
+.submit-step{background:rgba(255,255,255,.1);border-radius:10px;padding:14px 16px}
+.submit-step .sn{font-size:22px;margin-bottom:6px}
+.submit-step .st{font-size:13px;font-weight:600}
+.submit-step .sd{font-size:11px;opacity:.7;margin-top:3px}
+
+.url-input-area{border:2px dashed var(--border);border-radius:10px;padding:20px;text-align:center;margin:16px 0}
+.url-input-area.has-url{border-color:#22c55e;background:#f0fdf4}
+.url-input-area input{width:100%;border:1.5px solid var(--border);border-radius:8px;padding:10px 14px;font-size:13px;font-family:var(--mono);background:white;margin-top:10px}
+.url-input-area input:focus{outline:none;border-color:var(--mid)}
+
+.submit-status{padding:16px 20px;border-radius:10px;margin:12px 0;font-size:14px;font-weight:600;display:none}
+.submit-status.success{background:var(--ok-bg);border:1.5px solid #86efac;color:var(--ok);display:block}
+.submit-status.error{background:var(--danger-bg);border:1.5px solid #fca5a5;color:var(--danger);display:block}
+.submit-status.loading{background:#eff6ff;border:1.5px solid #93c5fd;color:#1d4ed8;display:block}
+
+.class-code-box{background:linear-gradient(135deg,#f0fdf4,#ecfdf5);border:2px solid #86efac;border-radius:10px;padding:16px 20px;margin:12px 0}
+.class-code-box .cc-label{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;margin-bottom:4px}
+.class-code-box .cc-val{font-size:28px;font-weight:700;color:var(--ok);font-family:var(--mono);letter-spacing:4px}
+.class-code-box .cc-hint{font-size:11px;color:var(--muted);margin-top:4px}
+
+.progress-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:8px}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--sky));border-radius:3px;transition:width .4s ease;width:0%}
+
+/* Journal styles */
+.journal-step{display:flex;gap:16px;padding:20px 22px;background:var(--card);border-radius:12px;border:1px solid var(--border);margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.journal-step .step-num{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--teal));color:white;font-family:var(--mono);font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.journal-step .step-body{flex:1}
+.journal-step .step-title{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:6px}
+.journal-step .step-desc{font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.7}
+.info-block{background:linear-gradient(135deg,#f0f7ff,#e8f4fd);border-left:4px solid var(--sky);border-radius:0 8px 8px 0;padding:13px 16px;margin:10px 0;font-size:13px;line-height:1.75}
+.info-block.warn{background:linear-gradient(135deg,#fffbeb,#fef3c7);border-color:#f59e0b}
+.info-block.ok{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-color:#22c55e}
+.info-block .info-title{font-weight:700;color:var(--navy);margin-bottom:5px;font-size:13px}
+.knowledge-box{background:#0d2137;color:#e2e8f0;border-radius:10px;padding:18px 20px;margin:12px 0}
+.knowledge-box .kb-title{color:var(--sky);font-weight:700;font-size:12px;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px}
+.knowledge-box p{font-size:13px;line-height:1.8;color:#cbd5e1}
+.knowledge-box strong{color:white}
+.checklist{list-style:none}
+.checklist li{display:flex;align-items:flex-start;gap:8px;padding:5px 0;font-size:13px;color:var(--ink);line-height:1.6}
+.checklist li::before{content:'□';font-size:15px;color:var(--sky);flex-shrink:0;margin-top:1px}
+.protocol-table{width:100%;border-collapse:collapse;font-size:12.5px}
+.protocol-table th{background:var(--blue);color:white;padding:9px 11px;font-size:12px;text-align:left}
+.protocol-table td{padding:9px 11px;border-bottom:1px solid var(--border);vertical-align:top}
+.protocol-table tr:hover td{background:var(--bg)}
+.ref-citation{font-size:11.5px;color:var(--muted);border-left:3px solid var(--border);padding:6px 12px;margin:8px 0;font-style:italic;line-height:1.7}
+.ref-citation em{color:var(--ink);font-style:normal}
+
+/* MISC */
+.divider{border:none;border-top:1px solid var(--border);margin:18px 0}
+.small{font-size:11px;color:var(--muted)}
+.mono{font-family:var(--mono)}
+.mt12{margin-top:12px}
+.mt20{margin-top:20px}
+
+@media print {
+  body>*{display:none !important}
+  #printTarget{display:block !important}
+  body{background:white !important;font-family:'Noto Sans KR',sans-serif !important;font-size:10pt !important;color:#000 !important;margin:0;padding:0}
+  #printTarget{width:100%;max-width:100%;padding:0 !important;margin:0 !important}
+  .print-page{page-break-after:always;padding:18mm 16mm 16mm;min-height:100vh;position:relative}
+  .print-page:last-child{page-break-after:avoid}
+  .ph{border-bottom:2.5pt solid #0d2137;padding-bottom:8pt;margin-bottom:16pt;display:flex;justify-content:space-between;align-items:flex-end}
+  .ph-title{font-size:16pt;font-weight:700;color:#0d2137}
+  .ph-sub{font-size:9pt;color:#555;margin-top:2pt}
+  .ph-right{text-align:right;font-size:8pt;color:#555}
+  .pt{font-size:11pt;font-weight:700;color:#0d2137;border-left:3pt solid #1a5276;padding-left:7pt;margin:14pt 0 8pt}
+  .ptbl{width:100%;border-collapse:collapse;margin-bottom:10pt;font-size:9.5pt}
+  .ptbl th{background:#0d2137 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;color:white !important;padding:5pt 7pt;text-align:center;font-size:9pt}
+  .ptbl td{padding:5pt 7pt;border:.5pt solid #bbb;vertical-align:middle}
+  .ptbl .lbl{background:#e8f1f8 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;font-weight:600;color:#0d2137 !important}
+  .ptbl .inp{min-height:18pt}
+  .ptbl .shd{background:#f5f7fa !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .print-sign-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12pt;margin-top:24pt}
+  .print-sign-cell{border-top:1pt solid #333;padding-top:8pt;text-align:center;font-size:9pt;color:#333}
+  .print-footer{position:fixed;bottom:10mm;left:16mm;right:16mm;border-top:.5pt solid #ccc;padding-top:5pt;font-size:8pt;color:#888;display:flex;justify-content:space-between}
+}
+@media (max-width:768px){.g2,.g3,.g4,.score-overview{grid-template-columns:1fr 1fr}.topbar{padding:0 16px}.tb-nav .tb-btn span:not(.ico){display:none}}
+</style>
+</head>
+<body>
+
+<div id="printTarget" style="display:none"></div>
+
+<div class="topbar">
+  <div class="tb-brand">
+    <div class="tb-logo">D·A</div>
+    <div>
+      <div class="tb-title">나의 헬스케어 데이터 알기</div>
+      <div class="tb-sub">동아대학교 건강관리학과 디지털헬스케어 운동과학 실습</div>
+    </div>
+  </div>
+  <div class="tb-nav">
+    <button class="tb-btn active" onclick="showMain('secJournal',this)"><span class="ico">📓</span><span>Lab Journal</span></button>
+    <button class="tb-btn" onclick="showMain('secCRF',this)"><span class="ico">📋</span><span>eCRF 입력</span></button>
+    <button class="tb-btn" onclick="showMain('secReport',this)"><span class="ico">📊</span><span>평가 리포트</span></button>
+    <button class="tb-btn" onclick="showMain('secSubmit',this)"><span class="ico">📤</span><span>데이터 제출</span></button>
+    <button class="tb-btn" onclick="showMain('secRef',this)"><span class="ico">📚</span><span>참고문헌</span></button>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ================================================================
+     LAB JOURNAL
+================================================================ -->
+<div class="section active" id="secJournal">
+  <div class="page-title">📓 Lab Journal — 실험 학습 노트</div>
+  <div class="page-sub">실습의 의의, 원리, 프로토콜, 주의사항, 결과 활용을 학습하고 기록하는 공간입니다.</div>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showTab('lj1',this,'lj')">🔬 실습 의의 & 원리</button>
+    <button class="tab-btn" onclick="showTab('lj2',this,'lj')">⚙️ 측정 프로토콜</button>
+    <button class="tab-btn" onclick="showTab('lj3',this,'lj')">⚠️ 주의사항</button>
+    <button class="tab-btn" onclick="showTab('lj4',this,'lj')">✍️ 나의 관찰 노트</button>
+    <button class="tab-btn" onclick="showTab('lj5',this,'lj')">🎯 결과 활용</button>
+  </div>
+  <div class="tab-pane active" id="lj1">
+    <div class="journal-step"><div class="step-num">01</div><div class="step-body">
+      <div class="step-title">본 실습의 교육적 의의</div>
+      <div class="info-block ok"><div class="info-title">🎯 3-Layer 데이터 통합 접근</div>
+        <b>Layer 1 – 신체 조성 (InBody):</b> 근육·지방·수분의 정적 스냅샷<br>
+        <b>Layer 2 – 기능 체력:</b> 근력·지구력·민첩성·평형성의 동적 능력 지표<br>
+        <b>Layer 3 – 행동 패턴 (Fitbit):</b> 7일간의 실제 생활 활동 & 수면 데이터</div>
+      <div class="knowledge-box"><div class="kb-title">🔬 운동과학적 배경 지식</div><p>
+        <strong>근감소증(Sarcopenia)</strong>은 연령 증가에 따른 골격근량·근력의 진행성 감소로, AWGS 2019 기준 아시아 성인의 유병률은 남성 5.1–21.0%, 여성 6.7–24.3%에 이릅니다.<br><br>
+        <strong>악력</strong>은 전신 근력의 대리 지표로 심혈관 질환 및 사망률과 독립적으로 연관됩니다 (Bohannon, 2019).<br><br>
+        <strong>Fitbit 타당도:</strong> 걸음 수(r=0.92)와 수면 단계 측정에서 연구 수준 장비와 높은 상관 (Feehan et al., 2018).
+      </p></div>
+    </div></div>
+    <div class="card mt20"><div class="card-head"><div class="num">📝</div>학습 내용 자기 점검</div>
+      <ul class="checklist">
+        <li>BIA 원리(생체전기저항분석)를 설명할 수 있다</li>
+        <li>InBody 측정 전 표준화 조건 3가지 이상 말할 수 있다</li>
+        <li>골격근량과 악력이 왜 근감소증 지표인지 이해했다</li>
+        <li>반응시간과 외발서기가 측정하는 신체 기능을 구분할 수 있다</li>
+        <li>Fitbit 데이터의 타당도와 한계를 설명할 수 있다</li>
+      </ul>
+    </div>
+  </div>
+  <div class="tab-pane" id="lj2">
+    <div class="journal-step"><div class="step-num">P1</div><div class="step-body">
+      <div class="step-title">InBody 체성분 분석 표준 프로토콜</div>
+      <table class="protocol-table"><thead><tr><th>단계</th><th>내용</th><th>핵심 근거</th></tr></thead><tbody>
+        <tr><td><b>사전 준비</b></td><td>금식 2시간 이상 / 격렬한 운동 4시간 금지 / 이뇨제·카페인 자제</td><td>체수분 표준화 (Kyle et al., 2004)</td></tr>
+        <tr><td><b>복장</b></td><td>금속 액세서리 제거, 맨발</td><td>전극 접촉 저항 최소화</td></tr>
+        <tr><td><b>자세 입력</b></td><td>생년월일·성별·신장 정확히 입력</td><td>키 1cm 오류 → BMI 0.3 오차</td></tr>
+        <tr><td><b>측정 자세</b></td><td>발 전극 맨발 → 손잡이 파지 → 팔 약 15° 벌리기</td><td>InBody 표준 매뉴얼</td></tr>
+        <tr><td><b>측정 중</b></td><td>45–60초간 정지, 말하지 않음</td><td>-</td></tr>
+      </tbody></table>
+    </div></div>
+    <div class="journal-step"><div class="step-num">P2</div><div class="step-body">
+      <div class="step-title">기초 체력 측정 프로토콜</div>
+      <table class="protocol-table"><thead><tr><th width="160">항목</th><th>측정 방법</th><th>유효값 기준</th></tr></thead><tbody>
+        <tr><td><b>악력</b></td><td>선 자세, 팔 내림, 최대 힘으로 쥐기(3초), 좌·우 각 2회</td><td>최대값 채택, 2회 편차 >3kg 재측정</td></tr>
+        <tr><td><b>각근력</b></td><td>의자에 앉아 무릎 110° 굴곡, 3초간 최대 등척성 수축</td><td>최대값 채택</td></tr>
+        <tr><td><b>교차윗몸일으키기</b></td><td>무릎 90° 굴곡, 양손 교차, 30초 최대 반복</td><td>등 완전 접촉 시만 1회</td></tr>
+        <tr><td><b>반응시간</b></td><td>시각 자극(LED) → 버튼 누르기, 5회 평균</td><td>예상 동작 시 무효</td></tr>
+        <tr><td><b>눈감고 외발서기</b></td><td>눈 감은 순간 타이머 시작, 좌·우 각 2회, 최대 60초</td><td>최대값 채택</td></tr>
+      </tbody></table>
+    </div></div>
+  </div>
+  <div class="tab-pane" id="lj3">
+    <div class="journal-step"><div class="step-num">⚠</div><div class="step-body">
+      <div class="step-title">안전 주의사항</div>
+      <div class="info-block warn"><div class="info-title">🚫 절대 주의 대상 (사전 고지 필수)</div>
+        심장 박동기(Pacemaker) 착용자 → InBody 측정 금지<br>
+        임산부 → InBody 측정 금지<br>
+        인공 금속 삽입물 → 국소 측정 오차 가능, 교수 확인<br>
+        최근 2주내 골절·급성 손상 → 해당 체력 측정 제외<br>
+        측정 중 흉통·어지러움 → 즉시 중단 후 교수에게 보고</div>
+    </div></div>
+    <div class="journal-step"><div class="step-num">🎯</div><div class="step-body">
+      <div class="step-title">측정 오차의 종류와 관리</div>
+      <table class="protocol-table"><thead><tr><th>오차 유형</th><th>원인</th><th>관리 방법</th></tr></thead><tbody>
+        <tr><td><b>계통 오차</b></td><td>기기 캘리브레이션 오류, 프로토콜 미준수</td><td>매 측정 전 영점조정, 프로토콜 엄수</td></tr>
+        <tr><td><b>무작위 오차</b></td><td>대상자 컨디션 변동, 주의 집중 차이</td><td>2회 이상 반복 측정 후 최대값 사용</td></tr>
+        <tr><td><b>생물학적 변동</b></td><td>수분, 식사, 운동, 생리 주기</td><td>동일 시간대, 동일 조건 표준화</td></tr>
+      </tbody></table>
+    </div></div>
+  </div>
+  <div class="tab-pane" id="lj4">
+    <div class="card"><div class="card-head"><div class="num">✍</div>나의 실험 관찰 노트<div class="tag">개인 기록</div></div>
+      <div class="g2" style="margin-bottom:18px">
+        <div class="field"><label>실습 날짜</label><input type="date" id="jDate"></div>
+        <div class="field"><label>조 / 이름</label><input type="text" id="jName" placeholder="3조 / 홍길동"></div>
+      </div>
+      <div class="field" style="margin-bottom:16px"><label>① InBody 측정 관찰</label><textarea id="note1" placeholder="측정 과정 관찰, 특이사항, 질문..."></textarea></div>
+      <div class="field" style="margin-bottom:16px"><label>② 기초 체력 측정 관찰</label><textarea id="note2" placeholder="어려웠던 항목, 발견한 개인차..."></textarea></div>
+      <div class="field" style="margin-bottom:16px"><label>③ Fitbit 착용 1주 관찰</label><textarea id="note3" placeholder="예상치 못한 발견, 데이터 이상값..."></textarea></div>
+      <div class="field"><label>④ 전반적인 느낀점</label><textarea id="note4" placeholder="배운 것, 앞으로의 건강 관리 계획..."></textarea></div>
+      <div class="btn-bar">
+        <button class="btn btn-primary" onclick="printLabJournal()">🖨️ Lab Journal 인쇄/PDF</button>
+        <button class="btn btn-outline" onclick="['note1','note2','note3','note4'].forEach(id=>document.getElementById(id).value='')">🗑️ 초기화</button>
+      </div>
+    </div>
+  </div>
+  <div class="tab-pane" id="lj5">
+    <div class="journal-step"><div class="step-num">💡</div><div class="step-body">
+      <div class="step-title">측정 데이터의 임상적 활용</div>
+      <table class="protocol-table"><thead><tr><th>데이터</th><th>임상·현장 활용</th><th>디지털헬스케어 연결</th></tr></thead><tbody>
+        <tr><td><b>골격근량 + 악력</b></td><td>근감소증 스크리닝 / 재활 효과 모니터링</td><td>AI 운동 처방 알고리즘 / EMS 디지털 치료제</td></tr>
+        <tr><td><b>체지방률 + WHR</b></td><td>대사증후군 위험 분류</td><td>식이관리 앱 연동 / CGM 연계 분석</td></tr>
+        <tr><td><b>반응시간 + 외발서기</b></td><td>인지-운동 통합 능력 / 낙상 고위험군 선별</td><td>VR 기반 낙상예방 훈련</td></tr>
+        <tr><td><b>Fitbit 걸음수 + 수면</b></td><td>생활습관 개선 모니터링</td><td>디지털 치료제(DTx) 처방 근거</td></tr>
+      </tbody></table>
+    </div></div>
+    <div class="card"><div class="card-head"><div class="num">✍</div>나의 고찰 및 결론</div>
+      <div class="field" style="margin-bottom:14px"><label>실습 전체를 통해 배운 것, 앞으로 활용 계획</label><textarea id="note5" style="min-height:100px" placeholder="이번 실습을 통해..."></textarea></div>
+      <div class="field"><label>조원들과 논의한 내용 요약</label><textarea id="note6" style="min-height:80px" placeholder="조원 전체의 공통 발견사항..."></textarea></div>
+      <div class="btn-bar"><button class="btn btn-primary" onclick="printLabJournal()">🖨️ Lab Journal 인쇄/PDF</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     eCRF 입력
+================================================================ -->
+<div class="section" id="secCRF">
+  <div class="page-title">📋 전자 임상연구기록지 (eCRF)</div>
+  <div class="page-sub">모든 항목 입력 후 리포트 생성 및 Google Sheets 제출이 가능합니다.</div>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showTab('crf1',this,'crf')">기본 정보</button>
+    <button class="tab-btn" onclick="showTab('crf2',this,'crf')">체성분 (InBody)</button>
+    <button class="tab-btn" onclick="showTab('crf3',this,'crf')">기초 체력</button>
+    <button class="tab-btn" onclick="showTab('crf4',this,'crf')">Fitbit 7일</button>
+  </div>
+
+  <div class="tab-pane active" id="crf1">
+    <div class="card"><div class="card-head"><div class="num">01</div>대상자 기본 정보<div class="tag">CRF-01</div></div>
+      <div class="g3"><div class="field"><label>대상자 코드 (학번)</label><input type="text" id="studentId" placeholder="예: 20230001"></div><div class="field"><label>성명</label><input type="text" id="name" placeholder="홍길동"></div><div class="field"><label>측정 일자</label><input type="date" id="testDate"></div></div>
+      <div class="g4 mt12"><div class="field"><label>성별</label><select id="gender"><option value="male">남성</option><option value="female">여성</option></select></div><div class="field"><label>나이 (만)</label><input type="number" id="age" placeholder="21" min="10" max="100"></div><div class="field"><label>학년</label><select id="grade"><option>1학년</option><option>2학년</option><option>3학년</option><option>4학년</option></select></div><div class="field"><label>조 번호</label><input type="text" id="group" placeholder="3조"></div></div>
+    </div>
+    <div class="card"><div class="card-head"><div class="num">02</div>건강 이력</div>
+      <div class="g3"><div class="field"><label>기저질환</label><select id="disease"><option value="none">없음</option><option value="yes">있음</option></select></div><div class="field"><label>복용 약물</label><select id="meds"><option value="none">없음</option><option value="yes">있음</option></select></div><div class="field"><label>흡연</label><select id="smoke"><option value="none">비흡연</option><option value="ex">과거 흡연</option><option value="current">현재 흡연</option></select></div></div>
+      <div class="g3 mt12"><div class="field"><label>음주</label><select id="drink"><option value="none">없음</option><option value="occ">가끔</option><option value="freq">자주</option></select></div><div class="field"><label>규칙적 운동</label><select id="exercise"><option value="yes">예 (주 2회+)</option><option value="occ">가끔</option><option value="no">안 함</option></select></div><div class="field"><label>주당 운동 시간 (분)</label><input type="number" id="exMin" placeholder="150"></div></div>
+    </div>
+    <div class="btn-bar"><button class="btn btn-primary" onclick="showTab('crf2',document.querySelectorAll('#secCRF .tab-btn')[1],'crf')">다음 →</button></div>
+  </div>
+
+  <div class="tab-pane" id="crf2">
+    <div class="card"><div class="card-head"><div class="num">A</div>신체 계측<div class="tag">CRF-02a</div></div>
+      <div class="g4"><div class="field"><label>신장 (cm)</label><input type="number" id="height" placeholder="170.0" step="0.1"></div><div class="field"><label>체중 (kg)</label><input type="number" id="weight" placeholder="65.0" step="0.1"></div><div class="field"><label>허리둘레 (cm)</label><input type="number" id="waist" placeholder="75.0" step="0.1"></div><div class="field"><label>BMI (자동)</label><input type="text" id="bmiDisplay" readonly style="background:#f0f4f8;color:var(--blue);font-weight:700;font-family:var(--mono)"></div></div>
+    </div>
+    <div class="card"><div class="card-head"><div class="num">B</div>InBody 체성분 분석<div class="tag">CRF-02b</div></div>
+      <div class="g4"><div class="field"><label>골격근량 (kg)</label><input type="number" id="smm" placeholder="29.5" step="0.1"><div class="hint">남29-35 / 여19-24</div></div><div class="field"><label>체지방률 (%)</label><input type="number" id="pbf" placeholder="18.0" step="0.1"><div class="hint">남10-20 / 여18-28</div></div><div class="field"><label>체지방량 (kg)</label><input type="number" id="bfm" placeholder="12.0" step="0.1"></div><div class="field"><label>제지방량 (kg)</label><input type="number" id="ffm" placeholder="53.0" step="0.1"></div><div class="field"><label>복부지방률 (WHR)</label><input type="number" id="whr" placeholder="0.82" step="0.01"><div class="hint">남&lt;0.90 / 여&lt;0.85</div></div><div class="field"><label>기초대사량 (kcal)</label><input type="number" id="bmr" placeholder="1650"></div><div class="field"><label>내장지방 레벨</label><input type="number" id="visceral" placeholder="5" min="1" max="20"></div><div class="field"><label>체수분량 (L)</label><input type="number" id="tbw" placeholder="38.0" step="0.1"></div></div>
+    </div>
+    <div class="btn-bar"><button class="btn btn-outline" onclick="showTab('crf1',document.querySelectorAll('#secCRF .tab-btn')[0],'crf')">← 이전</button><button class="btn btn-primary" onclick="showTab('crf3',document.querySelectorAll('#secCRF .tab-btn')[2],'crf')">다음 →</button></div>
+  </div>
+
+  <div class="tab-pane" id="crf3">
+    <div class="card"><div class="card-head"><div class="num">A</div>근력<div class="tag">CRF-03a</div></div>
+      <div class="g4"><div class="field"><label>악력 우 1차 (kg)</label><input type="number" id="grip_r1" placeholder="40.0" step="0.1"></div><div class="field"><label>악력 우 2차 (kg)</label><input type="number" id="grip_r2" placeholder="41.5" step="0.1"></div><div class="field"><label>악력 좌 1차 (kg)</label><input type="number" id="grip_l1" placeholder="38.0" step="0.1"></div><div class="field"><label>악력 좌 2차 (kg)</label><input type="number" id="grip_l2" placeholder="39.0" step="0.1"></div><div class="field"><label>각근력 우 (kg)</label><input type="number" id="leg_r" placeholder="120.0" step="0.1"></div><div class="field"><label>각근력 좌 (kg)</label><input type="number" id="leg_l" placeholder="118.0" step="0.1"></div></div>
+    </div>
+    <div class="card"><div class="card-head"><div class="num">B</div>근지구력·민첩성·평형성<div class="tag">CRF-03b</div></div>
+      <div class="g4"><div class="field"><label>교차윗몸일으키기 (회/30초)</label><input type="number" id="situp" placeholder="25"></div><div class="field"><label>반응시간 1회 (ms)</label><input type="number" id="rt1" placeholder="230"></div><div class="field"><label>반응시간 2회 (ms)</label><input type="number" id="rt2" placeholder="225"></div><div class="field"><label>반응시간 3회 (ms)</label><input type="number" id="rt3" placeholder="220"></div><div class="field"><label>반응시간 4회 (ms)</label><input type="number" id="rt4" placeholder="228"></div><div class="field"><label>반응시간 5회 (ms)</label><input type="number" id="rt5" placeholder="222"></div><div class="field"><label>외발서기 우 1차 (초)</label><input type="number" id="bal_r1" placeholder="45"><div class="hint">최대 60초</div></div><div class="field"><label>외발서기 우 2차 (초)</label><input type="number" id="bal_r2" placeholder="52"></div><div class="field"><label>외발서기 좌 1차 (초)</label><input type="number" id="bal_l1" placeholder="42"></div><div class="field"><label>외발서기 좌 2차 (초)</label><input type="number" id="bal_l2" placeholder="48"></div></div>
+    </div>
+    <div class="btn-bar"><button class="btn btn-outline" onclick="showTab('crf2',document.querySelectorAll('#secCRF .tab-btn')[1],'crf')">← 이전</button><button class="btn btn-primary" onclick="showTab('crf4',document.querySelectorAll('#secCRF .tab-btn')[3],'crf')">다음 →</button></div>
+  </div>
+
+  <div class="tab-pane" id="crf4">
+    <div class="card"><div class="card-head"><div class="num">04</div>Fitbit 7일 데이터<div class="tag">CRF-04</div></div>
+      <div class="g2" style="margin-bottom:16px"><div class="field"><label>착용 시작일</label><input type="date" id="fbStart"></div><div class="field"><label>Fitbit 모델</label><input type="text" id="fbModel" placeholder="Fitbit Inspire 3"></div></div>
+      <div style="overflow-x:auto"><table class="wt"><thead><tr><th>날짜</th><th>걸음수(보)</th><th>활동칼로리(kcal)</th><th>수면시간(h)</th><th>깊은수면(%)</th><th>REM(%)</th><th>수면효율(%)</th><th>안정시심박수(bpm)</th></tr></thead><tbody id="fitbitBody"></tbody></table></div>
+    </div>
+    <div class="btn-bar">
+      <button class="btn btn-outline" onclick="showTab('crf3',document.querySelectorAll('#secCRF .tab-btn')[2],'crf')">← 이전</button>
+      <button class="btn btn-green" onclick="generateReport()">📊 리포트 생성</button>
+      <button class="btn btn-teal" onclick="printECRF()">🖨️ eCRF 인쇄</button>
+      <button class="btn btn-primary" onclick="showMain('secSubmit',document.querySelectorAll('.tb-btn')[3])">📤 데이터 제출 →</button>
+      <button class="btn btn-outline" onclick="downloadCSV()">⬇️ CSV</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     REPORT
+================================================================ -->
+<div class="section" id="secReport">
+  <div class="page-title">📊 개인 건강 평가 리포트</div>
+  <div class="page-sub" id="reportSubTitle">eCRF 데이터를 입력하고 리포트를 생성하세요.</div>
+  <div class="btn-bar" style="margin-bottom:22px">
+    <button class="btn btn-primary" onclick="printReport()">🖨️ 리포트 인쇄/PDF</button>
+    <button class="btn btn-outline" onclick="downloadCSV()">⬇️ CSV</button>
+    <button class="btn btn-outline btn-sm" onclick="showMain('secCRF',document.querySelectorAll('.tb-btn')[1])">← 데이터 수정</button>
+  </div>
+  <div id="reportContent"><div class="card" style="text-align:center;padding:60px;color:var(--muted)"><div style="font-size:48px;margin-bottom:12px">📋</div><div style="font-size:16px;font-weight:600">eCRF 데이터를 입력하고 리포트를 생성해 주세요</div><div style="font-size:13px;margin-top:8px">eCRF 탭 → 4단계 입력 → "리포트 생성" 버튼</div></div></div>
+</div>
+
+<!-- ================================================================
+     📤 데이터 제출 (NEW)
+================================================================ -->
+<div class="section" id="secSubmit">
+  <div class="page-title">📤 데이터 제출</div>
+  <div class="page-sub">입력한 eCRF 데이터를 Google Sheets로 안전하게 제출합니다.</div>
+
+  <!-- 안내 배너 -->
+  <div class="submit-banner">
+    <h2>🔐 보안 안내</h2>
+    <p>제출된 데이터는 교수님의 Google Sheets로만 전송됩니다.<br>
+    학생은 <strong>자신의 데이터 제출만 가능</strong>하며, 다른 학생의 데이터는 열람할 수 없습니다.<br>
+    제출 후 수정이 필요하면 담당 교수님께 직접 문의하세요.</p>
+    <div class="submit-steps">
+      <div class="submit-step"><div class="sn">1️⃣</div><div class="st">수업 코드 입력</div><div class="sd">교수님이 알려준 코드</div></div>
+      <div class="submit-step"><div class="sn">2️⃣</div><div class="st">학번 확인</div><div class="sd">중복 제출 방지</div></div>
+      <div class="submit-step"><div class="sn">3️⃣</div><div class="st">제출 완료</div><div class="sd">Google Sheets 자동 기록</div></div>
+    </div>
+  </div>
+
+  <!-- URL 자동 내장 -->
+  <div class="card">
+    <div class="card-head"><div class="num">①</div>서버 연결 상태</div>
+    <div style="display:flex;align-items:center;gap:14px;padding:14px 18px;background:var(--ok-bg);border:1.5px solid #86efac;border-radius:10px">
+      <div style="font-size:28px">✅</div>
+      <div>
+        <div style="font-weight:700;color:var(--ok);font-size:14px">Google Sheets 연결됨</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px;font-family:var(--mono)">동아대학교 건강관리학과 데이터 수집 서버</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 제출 -->
+  <div class="card">
+    <div class="card-head"><div class="num">②</div>제출 확인</div>
+    <div class="field" style="max-width:400px">
+      <label>학번 / 대상자 코드 확인</label>
+      <input type="text" id="confirmId" placeholder="학번 또는 코드">
+      <div class="hint">eCRF에 입력한 학번과 동일해야 합니다</div>
+    </div>
+
+    <!-- 제출 전 데이터 미리보기 -->
+    <div style="margin-top:16px;padding:14px 16px;background:var(--bg);border-radius:10px">
+      <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:10px">📋 제출 데이터 미리보기</div>
+      <div id="submitPreview" style="font-size:12px;color:var(--muted);font-family:var(--mono);line-height:2">
+        eCRF 데이터를 먼저 입력해 주세요.
+      </div>
+    </div>
+
+    <!-- 진행 표시 -->
+    <div id="progressArea" style="display:none;margin-top:14px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:6px" id="progressText">제출 중...</div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+
+    <div id="submitStatus" class="submit-status"></div>
+
+    <div class="btn-bar">
+      <button class="btn btn-green" id="submitBtn" onclick="submitData()" style="font-size:15px;padding:14px 28px">
+        📤 Google Sheets에 제출
+      </button>
+      <button class="btn btn-outline" onclick="refreshPreview()">🔄 미리보기 새로고침</button>
+    </div>
+    <p class="small" style="margin-top:10px">⚠️ 제출은 1회만 가능합니다. 수정이 필요한 경우 교수님께 문의하세요.</p>
+  </div>
+
+  <!-- 교수님 전용 대시보드 링크 -->
+  <div class="card" style="background:linear-gradient(135deg,#0d2137,#1a3a52);border:none">
+    <div style="color:white">
+      <div style="font-size:15px;font-weight:700;margin-bottom:8px">👨‍🏫 교수님 전용 — 데이터 대시보드</div>
+      <div style="font-size:13px;opacity:.75;margin-bottom:16px">Apps Script URL에 관리자 비밀번호를 추가하면 전체 제출 현황을 실시간으로 확인할 수 있습니다.</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-teal" onclick="openAdminDashboard()">🔐 관리자 대시보드 열기</button>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     참고문헌
+================================================================ -->
+<div class="section" id="secRef">
+  <div class="page-title">📚 근거 참고문헌</div>
+  <div class="page-sub">본 앱의 평가 기준 및 교육 내용의 근거 문헌 (APA 7th Edition)</div>
+
+  <div class="card"><div class="card-head"><div class="num">📖</div>체성분 & 비만 기준</div>
+    <div class="ref-citation">Korean Society for the Study of Obesity. (2023). <em>2023 비만 진료지침</em>. Korean Society for the Study of Obesity.</div>
+    <div class="ref-citation">Kyle, U. G., et al. (2004). Bioelectrical impedance analysis—part I. <em>Clinical Nutrition, 23</em>(5), 1226–1243.</div>
+  </div>
+  <div class="card"><div class="card-head"><div class="num">📖</div>근감소증 & 근력</div>
+    <div class="ref-citation">Chen, L. K., et al. (2020). Asian Working Group for Sarcopenia: 2019 Consensus Update. <em>JAMDA, 21</em>(3), 300–307.</div>
+    <div class="ref-citation">Cruz-Jentoft, A. J., et al. (2019). Sarcopenia: Revised European consensus. <em>Age and Ageing, 48</em>(1), 16–31.</div>
+    <div class="ref-citation">Bohannon, R. W. (2019). Grip strength: An indispensable biomarker for older adults. <em>Clinical Interventions in Aging, 14</em>, 1681–1691.</div>
+  </div>
+  <div class="card"><div class="card-head"><div class="num">📖</div>신체활동 & 수면</div>
+    <div class="ref-citation">World Health Organization. (2020). <em>WHO guidelines on physical activity and sedentary behaviour</em>.</div>
+    <div class="ref-citation">Tudor-Locke, C., et al. (2011). How many steps/day are enough? <em>IJBNPA, 8</em>, 79.</div>
+    <div class="ref-citation">Watson, N. F., et al. (2015). Recommended amount of sleep for a healthy adult. <em>Sleep, 38</em>(6), 843–844.</div>
+    <div class="ref-citation">Feehan, L. M., et al. (2018). Accuracy of Fitbit devices. <em>JMIR mHealth and uHealth, 6</em>(6), e10527.</div>
+  </div>
+</div>
+
+</div><!-- end container -->
+
+<!-- ================================================================
+     JAVASCRIPT
+================================================================ -->
+<script>
+// ===== NAV =====
+function showMain(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tb-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (btn) btn.classList.add('active');
+  window.scrollTo(0, 0);
+  if (id === 'secSubmit') refreshPreview();
+}
+function showTab(id, btn, prefix) {
+  const ctx = prefix === 'lj' ? 'secJournal' : 'secCRF';
+  document.querySelectorAll(`#${ctx} .tab-pane`).forEach(p => p.classList.remove('active'));
+  document.querySelectorAll(`#${ctx} .tab-btn`).forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+
+// ===== FITBIT TABLE =====
+(function buildFitbitTable() {
+  const tbody = document.getElementById('fitbitBody');
+  const labels = ['1일차','2일차','3일차','4일차','5일차','6일차','7일차'];
+  const ph = [8500,350,7.2,22,23,88,65];
+  const keys = ['steps','cal','sleep','deep','rem','eff','hr'];
+  labels.forEach((d, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td style="font-weight:600;background:#f0f4f8">${d}</td>` +
+      keys.map((k, j) => `<td><input type="number" id="fb_${k}_${i}" placeholder="${ph[j]}" step="${k==='sleep'?0.1:1}"></td>`).join('');
+    tbody.appendChild(tr);
+  });
+  const avgRow = document.createElement('tr');
+  avgRow.className = 'avg-row';
+  avgRow.innerHTML = `<td>7일 평균</td>` + keys.map(k => `<td id="avg_${k}">—</td>`).join('');
+  tbody.appendChild(avgRow);
+})();
+
+// ===== BMI AUTO =====
+document.addEventListener('input', function(e) {
+  if (e.target.id === 'height' || e.target.id === 'weight') {
+    const h = parseFloat(document.getElementById('height').value)/100;
+    const w = parseFloat(document.getElementById('weight').value);
+    document.getElementById('bmiDisplay').value = (h>0&&w>0) ? `${(w/(h*h)).toFixed(1)} kg/m²` : '';
+  }
+});
+
+// ===== HELPERS =====
+function gv(id) { return parseFloat(document.getElementById(id)?.value) || 0; }
+function gs(id) { return document.getElementById(id)?.value || ''; }
+function bmi() { const h=gv('height')/100, w=gv('weight'); return (h>0&&w>0)?(w/(h*h)).toFixed(1):'0'; }
+
+function fbAvgs() {
+  const keys=['steps','cal','sleep','deep','rem','eff','hr'];
+  const res={};
+  keys.forEach(k => {
+    const vals=[]; for(let i=0;i<7;i++){const v=gv(`fb_${k}_${i}`);if(v>0)vals.push(v);}
+    res[k]=vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:0;
+    const el=document.getElementById(`avg_${k}`);
+    if(el) el.textContent=res[k]>0?(k==='steps'?Math.round(res[k]).toLocaleString():res[k].toFixed(1)):'—';
+  });
+  return res;
+}
+
+function jOk(s){return `<span class="badge b-ok">✓ ${s}</span>`}
+function jWarn(s){return `<span class="badge b-warn">△ ${s}</span>`}
+function jErr(s){return `<span class="badge b-err">✗ ${s}</span>`}
+function scColor(s){return s>=4?'#22c55e':s>=3?'#f59e0b':'#ef4444'}
+function assessBMI(v){const b=parseFloat(v);return b<18.5?{j:jWarn('저체중'),score:2,cls:'warn'}:b<25?{j:jOk('정상'),score:5,cls:'ok'}:b<30?{j:jWarn('과체중'),score:2,cls:'warn'}:{j:jErr('비만'),score:1,cls:'err'}}
+function assessSMM(v,g){const lo=g==='male'?29:19,hi=g==='male'?35:24;return v>=lo&&v<=hi?{j:jOk('정상'),score:5,cls:'ok'}:v<lo?{j:jErr('근감소 위험'),score:1,cls:'err'}:{j:jWarn('과잉'),score:3,cls:'warn'}}
+function assessPBF(v,g){const lo=g==='male'?10:18,hi=g==='male'?20:28;return v>=lo&&v<=hi?{j:jOk('정상'),score:5,cls:'ok'}:v<lo?{j:jWarn('저지방'),score:3,cls:'warn'}:{j:jErr('과지방'),score:1,cls:'err'}}
+function assessWHR(v,g){const t=g==='male'?0.9:0.85;return v<t?{j:jOk('정상'),score:5,cls:'ok'}:v<t+0.05?{j:jWarn('경계'),score:3,cls:'warn'}:{j:jErr('복부비만'),score:1,cls:'err'}}
+function assessGrip(v,g){const t=g==='male'?28:18;return v>=t*1.2?{j:jOk('우수'),score:5,cls:'ok'}:v>=t?{j:jOk('양호'),score:4,cls:'ok'}:v>=t*0.85?{j:jWarn('보통'),score:3,cls:'warn'}:{j:jErr('낮음 ⚠AWGS'),score:1,cls:'err'}}
+function assessSitup(v){return v>=30?{j:jOk('우수'),score:5}:v>=25?{j:jOk('양호'),score:4}:v>=18?{j:jWarn('보통'),score:3}:{j:jErr('부족'),score:1}}
+function assessRT(v){return v===0?{j:'<span class="badge b-info">미입력</span>',score:0}:v<200?{j:jOk('매우 빠름'),score:5}:v<250?{j:jOk('정상'),score:4}:v<300?{j:jWarn('보통'),score:3}:{j:jErr('느림'),score:1}}
+function assessBal(v){return v>=50?{j:jOk('우수'),score:5}:v>=30?{j:jOk('양호'),score:4}:v>=15?{j:jWarn('보통'),score:3}:{j:jErr('주의'),score:1}}
+function assessSteps(v){return v>=10000?{j:jOk('달성'),score:5}:v>=7500?{j:jOk('양호'),score:4}:v>=5000?{j:jWarn('부족'),score:2}:v===0?{j:'<span class="badge b-info">미입력</span>',score:0}:{j:jErr('매우 부족'),score:1}}
+function assessSleep(v){return v>=7&&v<=9?{j:jOk('적정'),score:5}:v>=6&&v<7?{j:jWarn('약간 부족'),score:3}:v>9?{j:jWarn('과수면'),score:3}:v===0?{j:'<span class="badge b-info">미입력</span>',score:0}:{j:jErr('수면 부족'),score:1}}
+
+// ===== URL (내장 고정값) =====
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwd4kh0tcy4JifDo-i-piJwHgeo4fvHdaJromfS5xcfV2nvd3oEMkwhcyn5JIztZp-KNQ/exec';
+
+window.addEventListener('load', () => {
+  document.getElementById('testDate').valueAsDate = new Date();
+  document.getElementById('jDate').valueAsDate = new Date();
+  document.getElementById('fbStart').valueAsDate = new Date();
+});
+
+// ===== SUBMIT DATA =====
+function refreshPreview() {
+  const fb = fbAvgs();
+  const grip_r = Math.max(gv('grip_r1'), gv('grip_r2'));
+  const grip_l = Math.max(gv('grip_l1'), gv('grip_l2'));
+  const rts = [gv('rt1'),gv('rt2'),gv('rt3'),gv('rt4'),gv('rt5')].filter(v=>v>0);
+  const rt_avg = rts.length ? (rts.reduce((a,b)=>a+b,0)/rts.length).toFixed(0) : '—';
+
+  document.getElementById('submitPreview').innerHTML = `
+    <span style="color:var(--navy);font-weight:700">대상자:</span> ${gs('name')||'미입력'} (${gs('studentId')||'미입력'}) &nbsp;|&nbsp;
+    <span style="color:var(--navy);font-weight:700">조:</span> ${gs('group')||'미입력'} &nbsp;|&nbsp;
+    <span style="color:var(--navy);font-weight:700">측정일:</span> ${gs('testDate')||'미입력'}<br>
+    <span style="color:var(--navy);font-weight:700">BMI:</span> ${bmi()} &nbsp;|&nbsp;
+    <span style="color:var(--navy);font-weight:700">골격근량:</span> ${gv('smm')||'—'} kg &nbsp;|&nbsp;
+    <span style="color:var(--navy);font-weight:700">체지방률:</span> ${gv('pbf')||'—'} % &nbsp;|&nbsp;
+    <span style="color:var(--navy);font-weight:700">악력(평균):</span> ${((grip_r+grip_l)/2).toFixed(1)||'—'} kg<br>
+    <span style="color:var(--navy);font-weight:700">반응시간:</span> ${rt_avg} ms &nbsp;|&nbsp;
+    <span style="color:var(--navy);font-weight:700">걸음수(평균):</span> ${fb.steps>0?Math.round(fb.steps).toLocaleString():'—'} 보 &nbsp;|&nbsp;
+    <span style="color:var(--navy);font-weight:700">수면(평균):</span> ${fb.sleep>0?fb.sleep.toFixed(1):'—'} 시간
+  `;
+  document.getElementById('confirmId').value = gs('studentId');
+}
+
+async function submitData() {
+  const url = SCRIPT_URL;
+  const classCode = 'DHC2025';
+  const studentId = gs('studentId').trim();
+  if (!studentId) {
+    showStatus('submitStatus', 'error', '⚠️ 학번을 eCRF 기본정보 탭에 입력해 주세요.');
+    return;
+  }
+  if (!confirm(`다음 데이터를 제출하시겠습니까?\n\n이름: ${gs('name')}\n학번: ${studentId}\n수업코드: ${classCode}\n\n※ 제출 후 수정은 교수님께 문의하세요.`)) return;
+
+  // 진행 표시
+  document.getElementById('progressArea').style.display = 'block';
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  animateProgress(0, 30, 600);
+  showStatus('submitStatus', 'loading', '📡 데이터를 전송하고 있습니다...');
+
+  // 데이터 수집
+  const fb = fbAvgs();
+  const payload = {
+    classCode,
+    studentId, name: gs('name'), gender: gs('gender'), age: gv('age'),
+    grade: gs('grade'), group: gs('group'), testDate: gs('testDate'),
+    disease: gs('disease'), meds: gs('meds'), smoke: gs('smoke'),
+    drink: gs('drink'), exercise: gs('exercise'), exMin: gv('exMin'),
+    height: gv('height'), weight: gv('weight'), bmi: bmi(), waist: gv('waist'),
+    smm: gv('smm'), pbf: gv('pbf'), bfm: gv('bfm'), ffm: gv('ffm'),
+    whr: gv('whr'), bmr: gv('bmr'), visceral: gv('visceral'), tbw: gv('tbw'),
+    grip_r1: gv('grip_r1'), grip_r2: gv('grip_r2'),
+    grip_l1: gv('grip_l1'), grip_l2: gv('grip_l2'),
+    leg_r: gv('leg_r'), leg_l: gv('leg_l'), situp: gv('situp'),
+    rt1: gv('rt1'), rt2: gv('rt2'), rt3: gv('rt3'), rt4: gv('rt4'), rt5: gv('rt5'),
+    bal_r1: gv('bal_r1'), bal_r2: gv('bal_r2'),
+    bal_l1: gv('bal_l1'), bal_l2: gv('bal_l2'),
+  };
+  // Fitbit 7일
+  ['steps','cal','sleep','deep','rem','eff','hr'].forEach(k => {
+    for(let i=0;i<7;i++) payload[`fb_${k}_${i}`] = gv(`fb_${k}_${i}`);
+  });
+
+  animateProgress(30, 70, 800);
+
+  // JSONP 방식으로 전송 (Apps Script CORS 우회 — 가장 안정적인 방법)
+  const cbName = 'cb_' + Date.now();
+  const jsonStr = encodeURIComponent(JSON.stringify(payload));
+  const scriptEl = document.createElement('script');
+
+  const timeout = setTimeout(() => {
+    cleanup();
+    animateProgress(70, 0, 200);
+    showStatus('submitStatus', 'error', '❌ 전송 시간 초과(15초).\n\nApps Script URL이 올바른지, 배포 설정(액세스: 모든 사용자)을 확인해 주세요.');
+    btn.disabled = false;
+    document.getElementById('progressArea').style.display = 'none';
+  }, 15000);
+
+  function cleanup() {
+    clearTimeout(timeout);
+    delete window[cbName];
+    if (scriptEl.parentNode) document.head.removeChild(scriptEl);
+  }
+
+  window[cbName] = function(response) {
+    cleanup();
+    animateProgress(70, 100, 400);
+    setTimeout(() => {
+      document.getElementById('progressArea').style.display = 'none';
+      if (response && response.success) {
+        showStatus('submitStatus', 'success',
+          `✅ 데이터가 성공적으로 제출되었습니다!\n\n이름: ${gs('name')} | 학번: ${studentId}\n제출 시각: ${new Date().toLocaleString('ko-KR')}\n\n교수님의 Google Sheets에 정상 기록되었습니다.`
+        );
+        btn.textContent = '✅ 제출 완료';
+        btn.disabled = true;
+        btn.style.background = '#1e8449';
+      } else {
+        showStatus('submitStatus', 'error', '❌ ' + (response?.message || '서버 오류가 발생했습니다.'));
+        btn.disabled = false;
+      }
+    }, 400);
+  };
+
+  scriptEl.src = `${SCRIPT_URL}?callback=${cbName}&data=${jsonStr}`;
+  scriptEl.onerror = function() {
+    cleanup();
+    animateProgress(70, 0, 200);
+    showStatus('submitStatus', 'error', '❌ 스크립트 로드 실패.\nApps Script URL과 배포 설정을 확인해 주세요.');
+    btn.disabled = false;
+    document.getElementById('progressArea').style.display = 'none';
+  };
+  document.head.appendChild(scriptEl);
+}
+
+function animateProgress(from, to, duration) {
+  const fill = document.getElementById('progressFill');
+  const step = (to - from) / (duration / 16);
+  let cur = from;
+  const timer = setInterval(() => {
+    cur += step;
+    fill.style.width = Math.min(Math.max(cur, 0), 100) + '%';
+    if ((step > 0 && cur >= to) || (step < 0 && cur <= to)) clearInterval(timer);
+  }, 16);
+}
+
+function showStatus(id, type, msg) {
+  const el = document.getElementById(id);
+  el.className = `submit-status ${type}`;
+  el.textContent = msg;
+  el.style.whiteSpace = 'pre-line';
+}
+
+function openAdminDashboard() {
+  const url = SCRIPT_URL;
+  const pw = prompt('관리자 비밀번호를 입력하세요:');
+  if (pw) window.open(`${url}?action=dashboard&password=${encodeURIComponent(pw)}`, '_blank');
+}
+
+// ===== GENERATE REPORT =====
+function generateReport() {
+  const fb = fbAvgs();
+  const gender = gs('gender'), age = gv('age');
+  const bmiv = bmi();
+  const smm=gv('smm'), pbf=gv('pbf'), whr=gv('whr');
+  const grip_r=Math.max(gv('grip_r1'),gv('grip_r2'));
+  const grip_l=Math.max(gv('grip_l1'),gv('grip_l2'));
+  const grip_avg=((grip_r+grip_l)/2).toFixed(1);
+  const rts=[gv('rt1'),gv('rt2'),gv('rt3'),gv('rt4'),gv('rt5')].filter(v=>v>0);
+  const rt_avg=rts.length?(rts.reduce((a,b)=>a+b,0)/rts.length).toFixed(0):0;
+  const bal_r=Math.max(gv('bal_r1'),gv('bal_r2'));
+  const bal_l=Math.max(gv('bal_l1'),gv('bal_l2'));
+  const bal_avg=((bal_r+bal_l)/2).toFixed(1);
+  const situp=gv('situp');
+  const aBMI=assessBMI(bmiv),aSMM=assessSMM(smm,gender),aPBF=assessPBF(pbf,gender);
+  const aWHR=assessWHR(whr,gender),aGrip=assessGrip(parseFloat(grip_avg),gender);
+  const aSitup=assessSitup(situp),aRT=assessRT(parseFloat(rt_avg)),aBal=assessBal(parseFloat(bal_avg));
+  const aSteps=assessSteps(fb.steps),aSleep=assessSleep(fb.sleep);
+  const scores=[aBMI,aSMM,aPBF,aGrip,aSitup,aRT,aBal,aSteps,aSleep].filter(x=>x.score>0).map(x=>x.score);
+  const overall=scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length*20):0;
+  const grade=overall>=80?'우수':overall>=65?'양호':overall>=50?'보통':'주의 필요';
+  const gradeColor=overall>=80?'#22c55e':overall>=65?'#3b82f6':overall>=50?'#f59e0b':'#ef4444';
+  const recs=[];
+  if(aBMI.score<4) recs.push({cat:'체중 관리',ico:'⚖️',msg:`BMI ${bmiv}. ${parseFloat(bmiv)>=25?'과체중/비만으로 체중 감량이 필요합니다. 주 150분 이상 유산소 운동과 식이 조절을 권장합니다.':'저체중으로 균형 잡힌 영양 섭취가 필요합니다.'}`});
+  if(aSMM.score<4) recs.push({cat:'근육량 증진',ico:'💪',msg:`골격근량(${smm}kg)이 AWGS 기준 ${gender==='male'?'29-35kg':'19-24kg'} 권장 범위에서 벗어났습니다. 주 2–3회 저항성 운동과 단백질 1.2–1.6g/kg 섭취를 권장합니다.`});
+  if(aGrip.score<4) recs.push({cat:'악력 향상',ico:'🏋️',msg:`악력(${grip_avg}kg)이 AWGS 2019 기준(남≥28kg, 여≥18kg) 이하입니다. 상지 근력 훈련을 추가하세요.`});
+  if(aSteps.score<4) recs.push({cat:'일상 활동량',ico:'🚶',msg:`평균 걸음수(${Math.round(fb.steps)}보)가 WHO 권장(10,000보)에 미치지 못합니다. 계단 이용, 짧은 산책 등을 실천하세요.`});
+  if(aSleep.score<4) recs.push({cat:'수면 개선',ico:'😴',msg:`평균 수면(${fb.sleep.toFixed(1)}시간)이 권장 범위(7–9시간)를 벗어났습니다. 규칙적인 수면 패턴을 유지하세요.`});
+  if(recs.length===0) recs.push({cat:'현상 유지',ico:'🌟',msg:'전반적으로 건강한 상태를 유지하고 있습니다. 꾸준히 현재 패턴을 유지하세요!'});
+
+  document.getElementById('reportSubTitle').textContent = `대상자: ${gs('name')||'미입력'} | 측정일: ${gs('testDate')||'미입력'} | 종합: ${overall}점 (${grade})`;
+  document.getElementById('reportContent').innerHTML = `
+  <div style="background:linear-gradient(135deg,#0d2137,#1a5276 60%,#2471a3);color:white;border-radius:14px;padding:32px 36px;margin-bottom:20px">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px">
+      <div><div style="font-size:11px;opacity:.6;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">개인 건강 평가 리포트</div>
+        <div style="font-size:22px;font-weight:700;font-family:var(--serif)">${gs('name')||'—'} <span style="font-size:14px;font-weight:300;opacity:.8">(${gs('studentId')||'코드없음'})</span></div>
+        <div style="margin-top:6px;opacity:.7;font-size:13px">${gender==='male'?'남성':'여성'} · ${age}세 · ${gs('grade')} · ${gs('group')||'—'} · ${gs('testDate')||'—'}</div>
+      </div>
+      <div style="text-align:center">
+        <div style="width:90px;height:90px;border-radius:50%;border:4px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto">
+          <div style="font-size:30px;font-weight:900;font-family:var(--mono);color:${gradeColor}">${overall}</div>
+          <div style="font-size:11px;opacity:.7">/ 100</div>
+        </div>
+        <div style="margin-top:8px;font-weight:700;font-size:15px;color:${gradeColor}">${grade}</div>
+      </div>
+    </div>
+  </div>
+  <div class="score-overview">
+    ${[{l:'BMI',v:bmiv,u:'kg/m²',a:aBMI},{l:'골격근량',v:smm,u:'kg',a:aSMM},{l:'체지방률',v:pbf,u:'%',a:aPBF},{l:'일일걸음수',v:fb.steps>0?Math.round(fb.steps).toLocaleString():'—',u:'보/일',a:aSteps}].map(x=>`<div class="score-tile ${x.a.cls||''}"><div class="tv">${x.v}</div><div class="tl">${x.l} (${x.u})</div><div class="tj">${x.a.j}</div></div>`).join('')}
+  </div>
+  <div class="card"><div class="card-head"><div class="num">①</div>체성분 분석</div>
+    <table class="rt"><thead><tr><th>항목</th><th>측정값</th><th>기준</th><th>판정</th></tr></thead><tbody>
+      <tr><td>BMI</td><td class="mono">${bmiv} kg/m²</td><td>18.5–24.9</td><td>${aBMI.j}</td></tr>
+      <tr><td>골격근량</td><td class="mono">${smm} kg</td><td>${gender==='male'?'29–35 kg':'19–24 kg'}</td><td>${aSMM.j}</td></tr>
+      <tr><td>체지방률</td><td class="mono">${pbf} %</td><td>${gender==='male'?'10–20%':'18–28%'}</td><td>${aPBF.j}</td></tr>
+      <tr><td>복부지방률</td><td class="mono">${whr}</td><td>${gender==='male'?'< 0.90':'< 0.85'}</td><td>${aWHR.j}</td></tr>
+    </tbody></table>
+  </div>
+  <div class="card"><div class="card-head"><div class="num">②</div>기초 체력</div>
+    <table class="rt"><thead><tr><th>항목</th><th>측정값</th><th>기준</th><th>판정</th></tr></thead><tbody>
+      <tr><td>악력(평균)</td><td class="mono">${grip_avg} kg</td><td>${gender==='male'?'≥28kg':'≥18kg'} AWGS</td><td>${aGrip.j}</td></tr>
+      <tr><td>교차윗몸일으키기</td><td class="mono">${situp} 회/30초</td><td>≥25회</td><td>${aSitup.j}</td></tr>
+      <tr><td>반응시간(평균)</td><td class="mono">${rt_avg} ms</td><td>&lt;250ms</td><td>${aRT.j}</td></tr>
+      <tr><td>외발서기(평균)</td><td class="mono">${bal_avg} 초</td><td>≥45초</td><td>${aBal.j}</td></tr>
+    </tbody></table>
+  </div>
+  <div class="card"><div class="card-head"><div class="num">③</div>Fitbit 데이터</div>
+    <table class="rt"><thead><tr><th>항목</th><th>7일 평균</th><th>기준</th><th>판정</th></tr></thead><tbody>
+      <tr><td>일일 걸음수</td><td class="mono">${fb.steps>0?Math.round(fb.steps).toLocaleString()+' 보':'—'}</td><td>≥10,000보</td><td>${aSteps.j}</td></tr>
+      <tr><td>총 수면 시간</td><td class="mono">${fb.sleep>0?fb.sleep.toFixed(1)+' h':'—'}</td><td>7–9시간</td><td>${aSleep.j}</td></tr>
+      <tr><td>수면 효율</td><td class="mono">${fb.eff>0?fb.eff.toFixed(1)+'%':'—'}</td><td>≥85%</td><td>${fb.eff>=85?jOk('달성'):fb.eff===0?'<span class="badge b-info">미입력</span>':jErr('개선필요')}</td></tr>
+      <tr><td>안정시 심박수</td><td class="mono">${fb.hr>0?fb.hr.toFixed(0)+' bpm':'—'}</td><td>60–100 bpm</td><td>${fb.hr>=60&&fb.hr<=100?jOk('정상'):fb.hr===0?'<span class="badge b-info">미입력</span>':jWarn('확인필요')}</td></tr>
+    </tbody></table>
+  </div>
+  <div class="card"><div class="card-head"><div class="num">④</div>영역별 건강 수준</div>
+    ${[{l:'체성분(BMI)',s:aBMI.score},{l:'골격근량',s:aSMM.score},{l:'체지방 관리',s:aPBF.score},{l:'악력(근력)',s:aGrip.score},{l:'근지구력',s:aSitup.score},{l:'반응시간',s:aRT.score},{l:'평형성',s:aBal.score},{l:'일상 활동량',s:aSteps.score},{l:'수면 건강',s:aSleep.score}].filter(g=>g.s>0).map(g=>`<div class="gauge-row"><div class="gl">${g.l}</div><div class="gb"><div class="gf" style="width:${(g.s/5)*100}%;background:${scColor(g.s)}"></div></div><div class="gv" style="color:${scColor(g.s)}">${g.s}/5</div></div>`).join('')}
+  </div>
+  <div class="card"><div class="card-head"><div class="num">⑤</div>건강 개선 권고</div>
+    ${recs.map(r=>`<div style="display:flex;gap:12px;margin-bottom:12px;padding:14px 16px;background:var(--bg);border-radius:10px;border-left:3px solid var(--blue)"><div style="font-size:22px;flex-shrink:0">${r.ico}</div><div><div style="font-weight:700;font-size:13px;color:var(--navy);margin-bottom:3px">${r.cat}</div><div style="font-size:13px;color:#444;line-height:1.7">${r.msg}</div></div></div>`).join('')}
+  </div>
+  <div class="card" style="background:var(--bg)">
+    <div style="font-size:11px;color:var(--muted);line-height:1.8"><b style="color:var(--navy)">📖 평가 근거</b><br>Chen et al. (2020) AWGS 2019 | 대한비만학회 (2023) | WHO (2020) Physical Activity Guidelines | Tudor-Locke et al. (2011) Steps/day | Watson et al. (2015) Sleep recommendations</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:24px;font-size:12px;text-align:center">
+      <div style="border-top:1.5px solid #999;padding-top:8px">지도교수 확인<br><b>박현태 교수</b></div>
+      <div style="border-top:1.5px solid #999;padding-top:8px">대상자<br><b>${gs('name')||'—'}</b></div>
+      <div style="border-top:1.5px solid #999;padding-top:8px">평가일자<br><b>${gs('testDate')||'—'}</b></div>
+    </div>
+    <div style="text-align:center;margin-top:14px;font-size:10px;color:var(--muted)">동아대학교 건강관리학과 디지털헬스케어연구소 | 본 결과는 교육 목적이며 의학적 진단을 대체하지 않습니다.</div>
+  </div>`;
+  showMain('secReport', document.querySelectorAll('.tb-btn')[2]);
+}
+
+// ===== PRINT eCRF =====
+function printECRF() {
+  fbAvgs();
+  const fb=fbAvgs(), gender=gs('gender'), bmiV=bmi();
+  const grip_r=Math.max(gv('grip_r1'),gv('grip_r2')), grip_l=Math.max(gv('grip_l1'),gv('grip_l2'));
+  const rts=[gv('rt1'),gv('rt2'),gv('rt3'),gv('rt4'),gv('rt5')].filter(v=>v>0);
+  const rt_avg=rts.length?(rts.reduce((a,b)=>a+b,0)/rts.length).toFixed(0):'-';
+  const fbRows=[]; for(let i=0;i<7;i++) fbRows.push(`<tr><td class="shd">${i+1}일차</td><td>${gv(`fb_steps_${i}`)||''}</td><td>${gv(`fb_cal_${i}`)||''}</td><td>${gv(`fb_sleep_${i}`)||''}</td><td>${gv(`fb_deep_${i}`)||''}</td><td>${gv(`fb_rem_${i}`)||''}</td><td>${gv(`fb_eff_${i}`)||''}</td><td>${gv(`fb_hr_${i}`)||''}</td></tr>`);
+  const html=`<style>@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&display=swap');*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Noto Sans KR',sans-serif;font-size:10pt;color:#000}.print-page{padding:18mm 16mm 16mm;min-height:270mm;page-break-after:always}.print-page:last-child{page-break-after:avoid}.ph{border-bottom:2.5pt solid #0d2137;padding-bottom:8pt;margin-bottom:14pt;display:flex;justify-content:space-between;align-items:flex-end}.ph-title{font-size:16pt;font-weight:700;color:#0d2137}.ph-sub{font-size:9pt;color:#555;margin-top:2pt}.ph-right{text-align:right;font-size:8pt;color:#555}.pt{font-size:11pt;font-weight:700;color:#0d2137;border-left:3pt solid #1a5276;padding-left:7pt;margin:12pt 0 7pt}.ptbl{width:100%;border-collapse:collapse;margin-bottom:8pt;font-size:9.5pt}.ptbl th{background:#0d2137;color:white;padding:5pt 7pt;text-align:center;font-size:9pt}.ptbl td{padding:5pt 7pt;border:.5pt solid #bbb;min-height:16pt}.ptbl .lbl{background:#dce8f0;font-weight:600;color:#0d2137}.ptbl .shd{background:#f0f4f8}.sign-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12pt;margin-top:20pt}.sign-cell{border-top:1pt solid #333;padding-top:8pt;text-align:center;font-size:9pt}.footer{border-top:.5pt solid #ccc;padding-top:4pt;font-size:7.5pt;color:#888;display:flex;justify-content:space-between;margin-top:16pt}</style>
+  <div class="print-page">
+    <div class="ph"><div><div class="ph-title">전자 임상연구기록지 (eCRF)</div><div class="ph-sub">동아대학교 건강관리학과 | 나의 헬스케어 데이터 알기</div></div><div class="ph-right">DAU-DHC-CRF-001 | 1/3</div></div>
+    <div class="pt">CRF-01. 기본 정보</div>
+    <table class="ptbl"><tr><td class="lbl" width="120">대상자코드</td><td>${gs('studentId')}</td><td class="lbl" width="80">측정일</td><td>${gs('testDate')}</td></tr><tr><td class="lbl">성명</td><td>${gs('name')}</td><td class="lbl">성별/나이</td><td>${gender==='male'?'남성':'여성'} / ${gv('age')}세</td></tr><tr><td class="lbl">학년/조</td><td>${gs('grade')} / ${gs('group')}</td><td class="lbl">기저질환</td><td>${gs('disease')==='none'?'없음':'있음'}</td></tr></table>
+    <div class="pt">CRF-02. 체성분 (InBody)</div>
+    <table class="ptbl"><tr><th>신장(cm)</th><th>체중(kg)</th><th>BMI</th><th>허리둘레(cm)</th></tr><tr><td style="text-align:center">${gv('height')}</td><td style="text-align:center">${gv('weight')}</td><td style="text-align:center;font-weight:700">${bmiV}</td><td style="text-align:center">${gv('waist')}</td></tr></table>
+    <table class="ptbl"><tr><th>골격근량(kg)</th><th>체지방률(%)</th><th>체지방량(kg)</th><th>제지방량(kg)</th><th>WHR</th><th>BMR(kcal)</th><th>내장지방</th><th>체수분(L)</th></tr><tr>${[gv('smm'),gv('pbf'),gv('bfm'),gv('ffm'),gv('whr'),gv('bmr'),gv('visceral'),gv('tbw')].map(v=>`<td style="text-align:center;font-weight:600">${v||''}</td>`).join('')}</tr></table>
+    <div class="footer"><span>동아대학교 건강관리학과 | 지도교수: 박현태</span><span>페이지 1/3</span></div>
+  </div>
+  <div class="print-page">
+    <div class="ph"><div><div class="ph-title">eCRF — 기초 체력</div><div class="ph-sub">${gs('name')||'—'} | ${gs('testDate')||'—'}</div></div><div class="ph-right">DAU-DHC-CRF-001 | 2/3</div></div>
+    <div class="pt">CRF-03a. 악력 / 각근력</div>
+    <table class="ptbl"><tr><th>항목</th><th>1차(우)</th><th>2차(우)</th><th>최대(우)</th><th>1차(좌)</th><th>2차(좌)</th><th>최대(좌)</th></tr>
+    <tr><td class="shd">악력(kg)</td><td style="text-align:center">${gv('grip_r1')||''}</td><td style="text-align:center">${gv('grip_r2')||''}</td><td style="text-align:center;font-weight:700">${grip_r||''}</td><td style="text-align:center">${gv('grip_l1')||''}</td><td style="text-align:center">${gv('grip_l2')||''}</td><td style="text-align:center;font-weight:700">${grip_l||''}</td></tr>
+    <tr><td class="shd">각근력(kg)</td><td colspan="2" style="text-align:center">—</td><td style="text-align:center;font-weight:700">${gv('leg_r')||''}</td><td colspan="2" style="text-align:center">—</td><td style="text-align:center;font-weight:700">${gv('leg_l')||''}</td></tr></table>
+    <div class="pt">CRF-03b. 근지구력·반응시간·평형성</div>
+    <table class="ptbl"><tr><th>교차윗몸일으키기(회/30초)</th><th>반응시간1</th><th>반응시간2</th><th>반응시간3</th><th>반응시간4</th><th>반응시간5</th><th>평균(ms)</th></tr>
+    <tr><td style="text-align:center;font-weight:700">${gv('situp')||''}</td>${[1,2,3,4,5].map(i=>`<td style="text-align:center">${gv(`rt${i}`)||''}</td>`).join('')}<td style="text-align:center;font-weight:700">${rt_avg}</td></tr></table>
+    <table class="ptbl"><tr><th>항목</th><th>1차(우)</th><th>2차(우)</th><th>최대(우)</th><th>1차(좌)</th><th>2차(좌)</th><th>최대(좌)</th></tr>
+    <tr><td class="shd">외발서기(초)</td><td style="text-align:center">${gv('bal_r1')||''}</td><td style="text-align:center">${gv('bal_r2')||''}</td><td style="text-align:center;font-weight:700">${Math.max(gv('bal_r1'),gv('bal_r2'))||''}</td><td style="text-align:center">${gv('bal_l1')||''}</td><td style="text-align:center">${gv('bal_l2')||''}</td><td style="text-align:center;font-weight:700">${Math.max(gv('bal_l1'),gv('bal_l2'))||''}</td></tr></table>
+    <div class="footer"><span>동아대학교 건강관리학과 | 지도교수: 박현태</span><span>페이지 2/3</span></div>
+  </div>
+  <div class="print-page">
+    <div class="ph"><div><div class="ph-title">eCRF — Fitbit 7일 데이터</div><div class="ph-sub">${gs('name')||'—'} | 착용: ${gs('fbStart')||'—'}</div></div><div class="ph-right">DAU-DHC-CRF-001 | 3/3</div></div>
+    <div class="pt">CRF-04. Fitbit 7일 일별 데이터</div>
+    <table class="ptbl"><tr><th>날짜</th><th>걸음수(보)</th><th>활동칼로리</th><th>수면(h)</th><th>깊은수면(%)</th><th>REM(%)</th><th>수면효율(%)</th><th>심박수(bpm)</th></tr>${fbRows.join('')}
+    <tr style="background:#dce8f0;font-weight:700"><td style="text-align:center">7일평균</td><td style="text-align:center">${fb.steps>0?Math.round(fb.steps).toLocaleString():''}</td><td style="text-align:center">${fb.cal>0?fb.cal.toFixed(0):''}</td><td style="text-align:center">${fb.sleep>0?fb.sleep.toFixed(1):''}</td><td style="text-align:center">${fb.deep>0?fb.deep.toFixed(1):''}</td><td style="text-align:center">${fb.rem>0?fb.rem.toFixed(1):''}</td><td style="text-align:center">${fb.eff>0?fb.eff.toFixed(1):''}</td><td style="text-align:center">${fb.hr>0?fb.hr.toFixed(0):''}</td></tr></table>
+    <div class="sign-row"><div class="sign-cell">지도교수 확인<br><br><b>박현태 교수</b></div><div class="sign-cell">대상자 서명<br><br><b>${gs('name')||'—'}</b></div><div class="sign-cell">제출 일자<br><br><b>${gs('testDate')||'—'}</b></div></div>
+    <div style="margin-top:12pt;font-size:7.5pt;color:#555;border-top:.5pt solid #ccc;padding-top:5pt">참고: Chen et al.(2020) AWGS2019 | 대한비만학회(2023) | Watson et al.(2015) Sleep | Tudor-Locke et al.(2011) Steps | Feehan et al.(2018) Fitbit</div>
+    <div class="footer"><span>동아대학교 건강관리학과 | 지도교수: 박현태</span><span>페이지 3/3</span></div>
+  </div>`;
+  const win=window.open('','_blank','width=900,height=700');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>eCRF 인쇄</title></head><body>${html}</body></html>`);
+  win.document.close(); setTimeout(()=>{win.focus();win.print();},600);
+}
+
+// ===== PRINT REPORT =====
+function printReport() {
+  const content=document.getElementById('reportContent').innerHTML;
+  if(!content||content.includes('eCRF 데이터를 입력')){alert('먼저 리포트를 생성해 주세요.');return;}
+  const win=window.open('','_blank','width=900,height=700');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>헬스케어 리포트</title><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet"><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Noto Sans KR',sans-serif;padding:20mm 18mm;font-size:10pt;color:#000}.card{background:white;border:.5pt solid #ccc;border-radius:6pt;padding:14pt 16pt;margin-bottom:12pt}.card-head{font-size:11pt;font-weight:700;color:#0d2137;border-bottom:1pt solid #dde4ed;padding-bottom:8pt;margin-bottom:10pt;display:flex;align-items:center;gap:8pt}.card-head .num{width:22pt;height:22pt;background:#1a5276;color:white;border-radius:5pt;display:flex;align-items:center;justify-content:center;font-size:10pt;font-weight:700}.rt{width:100%;border-collapse:collapse;font-size:9pt}.rt thead th{background:#0d2137;color:white;padding:5pt 7pt;font-size:8.5pt}.rt tbody td{padding:5pt 7pt;border-bottom:.5pt solid #ddd}.badge{display:inline-block;padding:1pt 6pt;border-radius:10pt;font-size:8pt;font-weight:700}.b-ok{background:#ecfdf5;color:#1a7f4b}.b-warn{background:#fffbeb;color:#b45309}.b-err{background:#fef2f2;color:#b91c1c}.b-info{background:#eff6ff;color:#1d4ed8}.score-overview{display:grid;grid-template-columns:repeat(4,1fr);gap:10pt;margin-bottom:14pt}.score-tile{border:.5pt solid #ccc;border-radius:6pt;padding:10pt;text-align:center;border-top:3pt solid #ccc}.score-tile.ok{border-top-color:#22c55e}.score-tile.warn{border-top-color:#f59e0b}.score-tile.err{border-top-color:#ef4444}.score-tile .tv{font-size:20pt;font-weight:700;color:#0d2137}.score-tile .tl{font-size:8pt;color:#666;margin-top:3pt}.score-tile .tj{margin-top:5pt}.gauge-row{display:flex;align-items:center;gap:8pt;margin:4pt 0}.gauge-row .gl{width:120pt;font-size:9pt}.gauge-row .gb{flex:1;height:7pt;background:#dde4ed;border-radius:3pt;overflow:hidden}.gauge-row .gf{height:100%;border-radius:3pt}.gauge-row .gv{width:40pt;text-align:right;font-size:9pt;font-weight:700}.mono{font-family:monospace}</style></head><body>${content}</body></html>`);
+  win.document.close(); setTimeout(()=>{win.focus();win.print();},800);
+}
+
+// ===== PRINT LAB JOURNAL =====
+function printLabJournal(){const n1=document.getElementById('note1').value,n2=document.getElementById('note2').value,n3=document.getElementById('note3').value,n4=document.getElementById('note4').value,n5=document.getElementById('note5').value,n6=document.getElementById('note6').value,jDate=document.getElementById('jDate').value,jName=document.getElementById('jName').value;
+const html=`<style>@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&display=swap');*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Noto Sans KR',sans-serif;padding:18mm 16mm;font-size:10pt;color:#000}.ph{border-bottom:2.5pt solid #0d2137;padding-bottom:8pt;margin-bottom:14pt;display:flex;justify-content:space-between}.ph-t{font-size:16pt;font-weight:700;color:#0d2137}.pt{font-size:11pt;font-weight:700;color:#0d2137;border-left:3pt solid #1a5276;padding-left:7pt;margin:14pt 0 7pt}.nb{border:.75pt solid #bbb;border-radius:3pt;padding:8pt 10pt;min-height:60pt;font-size:9.5pt;line-height:1.8;white-space:pre-wrap;word-break:break-word}.chk{font-size:9pt;line-height:2.2}.chk-item::before{content:'□  '}.sign-row{display:grid;grid-template-columns:1fr 1fr;gap:12pt;margin-top:20pt}.sign-cell{border-top:1pt solid #333;padding-top:8pt;text-align:center;font-size:9pt}.footer{border-top:.5pt solid #ccc;padding-top:4pt;font-size:7.5pt;color:#888;display:flex;justify-content:space-between;margin-top:14pt}.pb{page-break-after:always}</style>
+<div class="pb"><div class="ph"><div><div class="ph-t">Lab Journal — 실험 학습 노트</div><div style="font-size:9pt;color:#555">동아대학교 건강관리학과 | 나의 헬스케어 데이터 알기</div></div><div style="text-align:right;font-size:8pt;color:#555">실습일: ${jDate||'—'}<br>조/이름: ${jName||'—'}</div></div>
+<div class="pt">1. 실습 의의 및 학습 목표</div><div style="font-size:9.5pt;background:#f0f7ff;border-left:3pt solid #5dade2;padding:8pt 10pt;line-height:1.8;border-radius:0 4pt 4pt 0">본 실습은 InBody 체성분 분석, 기초 체력 측정, Fitbit 웨어러블 데이터 수집의 3-Layer 통합 접근을 통해 데이터 기반 건강 관리 역량을 함양하는 교육 과정입니다.</div>
+<div class="pt">2. 학습 내용 자기 점검</div><div class="chk"><div class="chk-item">BIA 원리(생체전기저항분석)를 설명할 수 있다</div><div class="chk-item">InBody 측정 전 표준화 조건 3가지 이상 말할 수 있다</div><div class="chk-item">골격근량과 악력이 왜 근감소증 지표인지 이해했다</div><div class="chk-item">반응시간과 외발서기가 측정하는 신체 기능을 구분할 수 있다</div><div class="chk-item">Fitbit 데이터의 타당도와 한계를 설명할 수 있다</div></div>
+<div class="pt">3. InBody 측정 관찰</div><div class="nb">${n1||'(기록 없음)'}</div>
+<div class="pt">4. 기초 체력 측정 관찰</div><div class="nb">${n2||'(기록 없음)'}</div>
+<div class="footer"><span>동아대학교 건강관리학과 디지털헬스케어연구소 | 지도교수: 박현태</span><span>Lab Journal 1/2</span></div></div>
+<div><div class="ph"><div class="ph-t">Lab Journal (계속)</div><div style="font-size:8pt;color:#555;text-align:right">${jDate||'—'} | ${jName||'—'}</div></div>
+<div class="pt">5. Fitbit 1주 착용 관찰</div><div class="nb">${n3||'(기록 없음)'}</div>
+<div class="pt">6. 전반적인 느낀점</div><div class="nb">${n4||'(기록 없음)'}</div>
+<div class="pt">7. 나의 고찰 및 결론</div><div class="nb">${n5||'(기록 없음)'}</div>
+<div class="pt">8. 조별 논의 내용</div><div class="nb">${n6||'(기록 없음)'}</div>
+<div class="sign-row"><div class="sign-cell">지도교수 확인<br><br><b>박현태 교수</b></div><div class="sign-cell">학생 서명<br><br><b>${jName||'—'}</b></div></div>
+<div class="footer"><span>동아대학교 건강관리학과 디지털헬스케어연구소 | 지도교수: 박현태</span><span>Lab Journal 2/2</span></div></div>`;
+const win=window.open('','_blank','width=900,height=700');win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Lab Journal</title></head><body>${html}</body></html>`);win.document.close();setTimeout(()=>{win.focus();win.print();},600);}
+
+// ===== CSV =====
+function downloadCSV(){const fb=fbAvgs();const grip_r=Math.max(gv('grip_r1'),gv('grip_r2'));const grip_l=Math.max(gv('grip_l1'),gv('grip_l2'));const rts=[gv('rt1'),gv('rt2'),gv('rt3'),gv('rt4'),gv('rt5')].filter(v=>v>0);const rt_avg=rts.length?(rts.reduce((a,b)=>a+b,0)/rts.length).toFixed(0):'';const fbRows=[];for(let i=0;i<7;i++) fbRows.push([i+1,gv(`fb_steps_${i}`)||'',gv(`fb_cal_${i}`)||'',gv(`fb_sleep_${i}`)||'',gv(`fb_deep_${i}`)||'',gv(`fb_rem_${i}`)||'',gv(`fb_eff_${i}`)||'',gv(`fb_hr_${i}`)||''].join(','));
+const csv=['# 나의 헬스케어 데이터 | 동아대학교 건강관리학과',`# 지도교수: 박현태 | 측정일: ${gs('testDate')}`,'','항목,값',`학번,${gs('studentId')}`,`성명,${gs('name')}`,`성별,${gs('gender')==='male'?'남성':'여성'}`,`나이,${gv('age')}`,`BMI,${bmi()}`,`골격근량,${gv('smm')}`,`체지방률,${gv('pbf')}`,`악력평균,${((grip_r+grip_l)/2).toFixed(1)}`,`반응시간평균,${rt_avg}`,`걸음수평균,${fb.steps>0?Math.round(fb.steps):''}`,`수면평균,${fb.sleep>0?fb.sleep.toFixed(1):''}`,'','날짜,걸음수,칼로리,수면,깊은수면,REM,수면효율,심박수',...fbRows].join('\n');
+const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`healthcare_${gs('name')||'data'}_${gs('testDate')||'export'}.csv`;a.click();URL.revokeObjectURL(url);}
+
+</script>
+</body>
+</html>
